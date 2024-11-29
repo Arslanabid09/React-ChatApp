@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDatabase } from '../Context/DatabaseContext';
 import { ID } from 'appwrite';
-import { useAuth } from '../Context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Home = () => {
   const { message, addMessage, getMessages } = useDatabase();
-  const {user} = useAuth();
+ 
+  
   const [text, setText] = useState('');
-  console.log(message);
   // Format time for messages
   const formatTime = (time) => {
     const date = new Date(time);
@@ -22,7 +22,7 @@ const Home = () => {
   // Sending messages to the database
   const handleMessages = async () => {
    if(text.length < 1 || text== ''){
-    alert('Message cannot be empty')
+    toast.error('Message cannot be empty')
    }else if(text.trim()){
     const message = {
       username: 'Your Name',
@@ -37,6 +37,7 @@ const Home = () => {
 
   return (
     <main className="bg-slate-800 text-white flex justify-center">
+      <ToastContainer/>
       <div className="w-full sm:w-2/3 lg:w-1/2 my-10 bg-slate-900 p-6 rounded-lg shadow-lg">
         {/* Main container */}
         <div className="relative mb-6"> {/* Text area container */}

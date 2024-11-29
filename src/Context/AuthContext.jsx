@@ -1,54 +1,104 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { databases, account } from "../Appwrite/AppwriteConfig";
+import { createContext ,useContext,useEffect,useState } from "react";
+import { account } from "../Appwrite/AppwriteConfig";
+import { useNavigate } from "react-router-dom";
 import { ID } from "appwrite";
+import { toast } from "react-toastify";
 
 
-const AuthContext = createContext();
 
-// custom hook to handle data
-export const useAuth = () => useContext(AuthContext);
+// creating context 
+// use of createContext: it is used to share data between components without the use of props in every level of component tree in simple words it is a global container store data 
+ const AuthContext = createContext()
 
-// context provider 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  // handle sign in
-  const handleLogin = async (email, password) => {
+//  custom hook for handling data 
+export const useAuth = ()=>{
+    // useage: this way i can simplify the meathod of accessing data everyWhare. I don't need to write useContext(authContext) everyWhere
+    return useContext(AuthContext);
+}
+
+// context Provider 
+// useAge: this will wraps the app and provides the data (user,login,register etc)
+export const AuthProvider = ({ children })=>{
+  const [loading,setLoading] = useState(false);
+  const [user,setUser] = useState(null);
+  // use navigate to navigate the user  on the basis of condition
+  const navigate = useNavigate();
+  
+  // handling Login with appWrite
+  const handleLogin = async(userData)=>{
+      // createEmailPasswordSession: create a  session for user
+      try {
+           await account.createEmailPasswordSession(userData.email,userData.password);
+          // storing the response in user
+          const userDetails = await account.get();
+      setUser(userDetails);
+      } catch (error) {
+        if(error.code == 401){
+          toast.error("User does not Exist")
+        }else{
+        toast.error('something went wrong')
+          console.error(error);
+        }
+      }
+  }
+  // handling signUp with appWrite
+  const handleSignUp = async(userInfo)=>{
     try {
-      const response = await account.createEmailPasswordSession(email, password);
-      return response; // Return the response
+      // registering the user with appwrite
+      await account.create(ID.unique(),userInfo.email,userInfo.password,userInfo.name)
+      // creating a session for the registered user
+      await account.createEmailPasswordSession(userInfo.email,userInfo.password);
+      // getting the users details 
+      const userData = account.get();
+      setUser(userData);
+      navigate('/Room')
     } catch (error) {
-      console.error('Error during account creation:', error); // Log the error for debugging
-      return null;
+      if(error.code == 409){
+        toast.error('user already existes')
+      }else{
+        toast.error('something went wrong')
+        console.error(error);
+      }
+      
     }
   }
-  // handle sign up
-  const handleSignUp = async (email, password, Name) => {
+  // handling Logout with appwrite
+  const handleLogOut = async()=>{
+       await account.deleteSession('current');
+      setUser(null);
+  }
+  // getting user 
+  
+  const handleUser = async () => {
+    setLoading(true);
     try {
-      const response = await account.create(ID.unique(), email, password, Name);
-      return response; // Return the response
+      const response = await account.get();
+      setUser(response);
     } catch (error) {
-      console.error('Error during account creation:', error); // Log the error for debugging
-      return null;
+      console.error("Failed to fetch user:", error);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
-
-
-  // getting user data
-  const getUser = async () => {
-    // try {
-    //     const response = await account.get();
-    //     setUser(response);
-    // } catch (error) {
-    //     console.log(`Error is in AuthContext:${error}`);
-
-    // }
+  useEffect(()=>{
+    handleUser();
+},[])
+  // this holds all the data like functions states etc 
+  const AuthData = {
+      // this holds data of user
+      user,
+      // these are functions to handle Auth
+      handleLogin,
+      handleSignUp,
+      handleLogOut,
+      handleUser
   }
-  // useEffect to run the function
-  useEffect(() => {
-    getUser();
-  }, [])
-
-  return <AuthContext.Provider value={{handleLogin,handleSignUp, setUser, user }}>
-    {children}
+ return(
+     <AuthContext.Provider value={AuthData} >
+      {/* this makes the data available for all the childs */}
+      { loading? <p className="text-center text-white text-6xl  mt-60 font-extrabold">Loading...</p>:children}
   </AuthContext.Provider>
+) 
+
 }
