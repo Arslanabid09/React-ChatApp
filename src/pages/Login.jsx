@@ -89,7 +89,7 @@ const Login = () => {
               />
             )}
           </div>
-          <Button label="Sign Up" type="submit" className="w-full" />
+          <Button label="Login" type="submit" className="w-full" />
           <p className="text-white text-center font-medium">
             Don't have an account?<Link to={'/signUp'} className="text-green-600 cursor-pointer">Register Now</Link>
           </p>

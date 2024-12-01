@@ -64,8 +64,17 @@ export const AuthProvider = ({ children })=>{
   }
   // handling Logout with appwrite
   const handleLogOut = async()=>{
-       await account.deleteSession('current');
-      setUser(null);
+    try {
+     const response =  await account.deleteSession('current');
+     if(response){
+       setUser(null);
+     }
+      
+    } catch (error) {
+      toast.error("something went wrong")
+      console.log(error);
+      
+    }
   }
   // getting user 
   
