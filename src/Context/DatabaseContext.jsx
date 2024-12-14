@@ -19,7 +19,7 @@ export const useDatabase = () => {
       // sending messeges to database
       const addMessage = async (messagee) => {
           try {
-            const response = await databases.createDocument(dbId,collId, ID.unique(),messagee);
+            const response = await databases.createDocument(dbId,collId,ID.unique(),messagee);
             setMessage(prev  =>[response,...prev]);
           } catch (error) {
             console.log(error);

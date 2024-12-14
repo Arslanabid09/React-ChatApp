@@ -10,7 +10,7 @@ const Home = () => {
   const { message, addMessage, getMessages,handleDelete } = useDatabase();
   // getting user from useAuth
   let {user} = useAuth();
- 
+  console.log(user.name);
   
   const [text, setText] = useState('');
   // Format time for messages
@@ -25,21 +25,19 @@ const Home = () => {
     getMessages();
   }, []); 
   // Sending messages to the database
-  const handleMessages =  () => {
-   if(text.length < 1 || text== ''){
-    toast.error('Message cannot be empty')
-   }else if(text.trim()){
-    const message = {
-      username: user.name,
-      body: text,
-      user_id:user.$id,
+  const handleMessages =  () => {  
+    if(text.length < 1 || text== ''){
+      toast.error('Message cannot be empty')
+    }else if(text.trim()){
+      const payload = {
+        username: user.name,
+        user_id:user.$id,
+        body:text,
+      }
+      addMessage(payload);
+      setText('');
     }
-     addMessage(message);
-    setText('');
-   }
   };
-
-
   return (
     <main className="text-white  ">
       <style>
@@ -71,19 +69,19 @@ const Home = () => {
     <div className="my-3 px-3 max-h-[400px] overflow-y-auto bg-slate-800  p-2 rounded-lg shadow-inner">
       {message &&
         message.map((msg) => (
-          <div key={msg.$id} className={`space-y-3 ${msg.user_id ===user.$id ? 'justify-start':'justify-end'}`}>
+          <div key={msg.$id} className={`space-y- ${msg.user_id ===user.$id ? 'justify-start':'justify-end'}`}>
             <div className="">
+              <p className="text-gray-400 text-center text-xs">{formatTime(msg.$createdAt).slice(0,11) || 'time'}</p>
+            </div>
               <h4 className="tracking-wide font-bold text-blue-400">
                 {msg.username || 'Your Name'}
               </h4>
-              <p className="text-gray-400 text-center text-xs">{formatTime(msg.$createdAt).slice(0,11) || 'time'}</p>
-            </div>
-            <div className="flex justify-betwee items-start">
-  <span className={`${msg.user_id ===user.$id ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 ':' bg-transparent border border-white text-white'}    rounded-xl py-1 px-5 font-medium shadow-lg break-words w-auto max-w-[70%]`} 
+            <div className="flex  items-start">
+  <span className={`${msg.user_id ===user.$id ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 ':' bg-transparent border border-white text-white'}     py-1 px-5 font-medium shadow-lg break-words w-auto max-w-[70%]`} 
   style={{fontFamily:"Ubuntu, serif"}}
   >
     {msg.body}
-    <p className="text-gray-400 mt-2 text-end text-xs">{formatTime(msg.$createdAt).slice(12) || 'time'}</p>
+    <p className="text-gray-400 mt-2 text-end text-xs">{formatTime(msg.$createdAt).slice(13) || 'time'}</p>
   </span>
   {/* this way everyone can del only their own msg */}
   {msg.user_id === user.$id && (
