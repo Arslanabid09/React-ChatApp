@@ -1,6 +1,7 @@
 import React,{useEffect, useRef, useState} from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import { Input,Button } from '../components';
+import Input from '../components/Input';
+import Button from '../components/Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye,FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../Context/AuthContext';

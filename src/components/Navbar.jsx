@@ -10,8 +10,8 @@ const Navbar = () => {
     let {user,handleLogOut} = useAuth();
     // handling logout function
   return (
-    <header className='flex justify-between items-center px-16 py-4 bg-black border-b text-white'>
-      <h1 className='text-xl sm:text-2xl md:text-4xl font-extrabold'>{user.name}</h1>
+    <header className='flex justify-between items-center px-6 py-4  border-b text-white'>
+      <h1 className='text-xl sm:text-2xl md:text-4xl font-extrabold underline underline-offset-2'>{user.name}</h1>
       <button className='text-xl sm:text-2xl md:text-3xl cursor-pointer' onClick={()=>{
         handleLogOut()
         Navigate('/')

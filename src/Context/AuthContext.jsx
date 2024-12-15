@@ -24,6 +24,24 @@ export const AuthProvider = ({ children })=>{
   // use navigate to navigate the user  on the basis of condition
   const navigate = useNavigate();
   
+  // getting user 
+  
+  const handleUser = async () => {
+    setLoading(true);
+    try {
+      const response = await account.get();
+      setUser(response);
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(()=>{
+    handleUser();
+},[])
+
   // handling Login with appWrite
   const handleLogin = async(userData)=>{
       // createEmailPasswordSession: create a  session for user
@@ -50,6 +68,7 @@ export const AuthProvider = ({ children })=>{
       await account.createEmailPasswordSession(userInfo.email,userInfo.password);
       // getting the users details 
       const userData = account.get();
+      console.log(userData);
       setUser(userData);
       navigate('/Room')
     } catch (error) {
@@ -76,23 +95,6 @@ export const AuthProvider = ({ children })=>{
       
     }
   }
-  // getting user 
-  
-  const handleUser = async () => {
-    setLoading(true);
-    try {
-      const response = await account.get();
-      setUser(response);
-    } catch (error) {
-      console.error("Failed to fetch user:", error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(()=>{
-    handleUser();
-},[])
   // this holds all the data like functions states etc 
   const AuthData = {
       // this holds data of user

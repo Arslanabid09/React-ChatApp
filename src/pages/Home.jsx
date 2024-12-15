@@ -1,103 +1,125 @@
 import React, { useEffect, useState } from 'react';
-import { useDatabase } from '../Context/DatabaseContext';
-import { ID } from 'appwrite';
-import { toast, ToastContainer } from 'react-toastify';
+import { ID, Query } from 'appwrite';
 import { useAuth } from '../Context/AuthContext';
-import {BiTrash} from 'react-icons/bi';
-// importing google fonts
-const googleFont = `@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wght@0,100..900;1,100..900&family=Bebas+Neue&family=DynaPuff:wght@400..700&family=Faculty+Glyphic&family=Hubot+Sans:ital,wght@0,200..900;1,200..900&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Londrina+Sketch&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Space+Grotesk:wght@300..700&family=Teko:wght@300..700&family=Tilt+Warp&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');`
+import { FiSend } from 'react-icons/fi';
+import { FaSmile, FaTrash } from 'react-icons/fa';
+import client, {collId, databases, dbId } from '../Appwrite/AppwriteConfig';
+
+
 const Home = () => {
-  const { message, addMessage, getMessages,handleDelete } = useDatabase();
-  // getting user from useAuth
-  let {user} = useAuth();
-  console.log(user.name);
-  
+  let { user } = useAuth();
+//  state for textArea
   const [text, setText] = useState('');
-  // Format time for messages
-  const formatTime = (time) => {
-    const date = new Date(time);
-    let options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
-    return date.toLocaleTimeString('en-US', options);
-  };
-  
-  // Fetch messages when the component mounts
-  useEffect(() => {
-    getMessages();
-  }, []); 
-  // Sending messages to the database
-  const handleMessages =  () => {  
-    if(text.length < 1 || text== ''){
-      toast.error('Message cannot be empty')
-    }else if(text.trim()){
-      const payload = {
-        username: user.name,
-        user_id:user.$id,
-        body:text,
-      }
-      addMessage(payload);
-      setText('');
+  // state to store and map the messages
+  const [messages, setMessages] = useState([]);
+  // useEffect to fetch the messages from database
+  useEffect(()=>{
+    getMessages()
+      // adding realTime Events
+      // subscribe is used listens for real-time changes in the specified collection and triggers the callback on update.
+     const unsubscribe =   client.subscribe([`databases.${dbId}.collections.${collId}.documents`], response => {
+        // Callback will be executed on changes for documents A and all files.
+        if(response.events.includes(`databases.*.collections.*.documents.*.create`)){
+          setMessages((prevChat) => [response.payload, ...prevChat]);
+          console.log('realTime Event created');
+        }
+        if(response.events.includes(`databases.*.collections.*.documents.*.delete`)){
+          setMessages((prevChat)=> prevChat.filter((msg)=> msg.$id !== response.payload.$id))
+          console.log('delete event created');
+          
+        }
+    });
+
+    // returning it to prevent the memory leakage
+    return ()=>{
+      unsubscribe();
     }
-  };
+  },[])
+// sending messages 
+ const handleSubmit = async()=>{
+  // Object to store message data, including username, user ID, and message text.
+  const msgData = {
+    username:user.name,
+    user_id:user.$id,
+    body:text
+  }
+  // createDocument is used to create a doc
+       const response = await databases.createDocument(dbId,collId,ID.unique(),msgData);
+      //  setMessages((prev)=> [response,...prev])
+       setText('');
+ }
+//  getting messages from database
+const getMessages = async()=>{
+  // listDocuments is used to list all documents
+    const response = await databases.listDocuments(dbId,collId,[
+      // Query.orderDesc('$createdAt') is used to sort the documents in descending order of their creation time.
+      Query.orderDesc('$createdAt'),
+      // Query.limit(100) is used to limit the number of documents to 100.
+      Query.limit(100)  
+    ]);
+    // storing response in messages state
+    setMessages(response.documents);
+    console.log(response.documents);
+}
+  // deleting the messages on the basis of id 
+  const handleDelete = async(id)=>{
+    // deleteDocument is used to delete a single document 
+        await databases.deleteDocument(dbId,collId,id);
+        // setMessages((prevChat)=> prevChat.filter(msg => msg.$id !==id ));
+  }
   return (
-    <main className="text-white  ">
-      <style>
-        {googleFont}
-      </style>
-  <ToastContainer />
-  <div className="w-full mx-auto sm:w-3/4  bg-gradient-to-br from-slate-800 via-gray-900 to-gray-800 p-3 mt-6 rounded-xl">
-    {/* Main container */}
-    <div className="flex gap-3 items-center  font-semibold bg-gradient-to-r from-gray-700 to-gray-800 text-white placeholder-gray-400 resize-none rounded-lg border-2 border-slate-700 ">
-      {/* Text area container */}
-      <textarea
-        className=" w-full p-4 bg-transparent border-none outline-none resize-none"
-        placeholder="Say something amazing..."
-        onChange={(e) => setText(e.target.value)}
-        value={text}
-      ></textarea>
-      {/* Send button */}
-      {text.length > 0 && (
-        <button
-          className="bg-white text-black px-5 py-2 font-semibold rounded-md mx-3"
-          onClick={handleMessages}
-        >
-          Send
-        </button>
-      )}
-    </div>
-
-    {/* Message box */}
-    <div className="my-3 px-3 max-h-[400px] overflow-y-auto bg-slate-800  p-2 rounded-lg shadow-inner">
-      {message &&
-        message.map((msg) => (
-          <div key={msg.$id} className={`space-y- ${msg.user_id ===user.$id ? 'justify-start':'justify-end'}`}>
-            <div className="">
-              <p className="text-gray-400 text-center text-xs">{formatTime(msg.$createdAt).slice(0,11) || 'time'}</p>
+    <main className="text-white my-20 px-4">
+      {/* Input Section as Fixed Footer */}
+      <section className=" flex items-center gap-x-4 px-4 bg-blue-400 py-3 rounded-t-md shadow-md">
+        <FaSmile className="text-black/60 text-xl cursor-pointer hover:text-black transition-colors" />
+        <textarea
+          className="w-full border-none resize-none outline-none bg-transparent placeholder:text-black/70 text-black text-base font-semibold rounded-md"
+          placeholder="Type something..."
+          onChange={(e) => setText(e.target.value)}
+          value={text}
+        />
+        {text.trim().length > 0 && (
+          <FiSend
+            className="text-black/60 text-2xl cursor-pointer hover:text-black transition-colors"
+            onClick={handleSubmit}
+          />
+        )}
+      </section>
+      {/* Messages Section */}
+      <section className="px-10 mt-10  space-y-4">
+        {messages &&
+          messages.map((msg) => (
+            <div key={msg.$id} className={`flex flex-col  gap-y-1 ${msg.user_id === user.$id? 'items-start': 'items-end'} `}>
+              {/* Username */}
+              <p className="text-sm font-bold">{msg.username}</p>
+              {/* Message Body */}
+              <div className="flex gap-1">
+                <p className={ `${msg.user_id === user.$id? "bg-white text-black":" bg-black text-white"} h-auto font-semibold max-w-md p-3 rounded-lg shadow-md break-words`}>{msg.body}</p>
+                {msg.user_id === user.$id && (
+                  <FaTrash className='text-xs cursor-pointer mt-1' 
+                  onClick={()=> handleDelete(msg.$id)}
+                  />
+                )}
+              </div>
+              
+              {/* Message Time */}
+              {msg.$createdAt && (
+                <time
+                  className="text-xs mt-1  "
+                >
+                  {new Date(msg.$createdAt).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </time>
+              )}
             </div>
-              <h4 className="tracking-wide font-bold text-blue-400">
-                {msg.username || 'Your Name'}
-              </h4>
-            <div className="flex  items-start">
-  <span className={`${msg.user_id ===user.$id ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 ':' bg-transparent border border-white text-white'}     py-1 px-5 font-medium shadow-lg break-words w-auto max-w-[70%]`} 
-  style={{fontFamily:"Ubuntu, serif"}}
-  >
-    {msg.body}
-    <p className="text-gray-400 mt-2 text-end text-xs">{formatTime(msg.$createdAt).slice(13) || 'time'}</p>
-  </span>
-  {/* this way everyone can del only their own msg */}
-  {msg.user_id === user.$id && (
-      <BiTrash
-      onClick={() => handleDelete(msg.$id)}
-      className="hover:text-red-600 cursor-pointer duration-300 ml-2"
-    />
-  )}
-</div>
+          ))}
+      </section>
 
-          </div>
-        ))}
-    </div>
-  </div>
-</main>
-
+      
+    </main>
   );
 };
 
