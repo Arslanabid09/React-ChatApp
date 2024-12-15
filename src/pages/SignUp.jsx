@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
-import { Button, Input } from "../components";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Input from "../components/Input";
+import Button from "../components/Button";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
