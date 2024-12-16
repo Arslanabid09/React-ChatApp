@@ -9,30 +9,26 @@ import { toast } from "react-toastify";
 // creating context 
 // use of createContext: it is used to share data between components without the use of props in every level of component tree in simple words it is a global container store data 
  const AuthContext = createContext()
-
 //  custom hook for handling data 
 export const useAuth = ()=>{
     // useage: this way i can simplify the meathod of accessing data everyWhare. I don't need to write useContext(authContext) everyWhere
     return useContext(AuthContext);
 }
-
 // context Provider 
 // useAge: this will wraps the app and provides the data (user,login,register etc)
 export const AuthProvider = ({ children })=>{
   const [loading,setLoading] = useState(false);
   const [user,setUser] = useState(null);
   // use navigate to navigate the user  on the basis of condition
-  const navigate = useNavigate();
-  
+  const navigate = useNavigate(); 
   // getting user 
-  
   const handleUser = async () => {
     setLoading(true);
     try {
       const response = await account.get();
       setUser(response);
     } catch (error) {
-      console.error("Failed to fetch user:", error);
+      toast.error("Failed to fetch user. Please try again later.");
       setUser(null);
     } finally {
       setLoading(false);
@@ -55,7 +51,6 @@ export const AuthProvider = ({ children })=>{
           toast.error("User does not Exist")
         }else{
         toast.error('something went wrong')
-          console.error(error);
         }
       }
   }
@@ -67,8 +62,7 @@ export const AuthProvider = ({ children })=>{
       // creating a session for the registered user
       await account.createEmailPasswordSession(userInfo.email,userInfo.password);
       // getting the users details 
-      const userData = account.get();
-      console.log(userData);
+      const userData =  await account.get();
       setUser(userData);
       navigate('/Room')
     } catch (error) {
@@ -76,7 +70,6 @@ export const AuthProvider = ({ children })=>{
         toast.error('user already existes')
       }else{
         toast.error('something went wrong')
-        console.error(error);
       }
       
     }
@@ -87,12 +80,9 @@ export const AuthProvider = ({ children })=>{
      const response =  await account.deleteSession('current');
      if(response){
        setUser(null);
-     }
-      
+     }   
     } catch (error) {
-      toast.error("something went wrong")
-      console.log(error);
-      
+      toast.error("something went wrong")      
     }
   }
   // this holds all the data like functions states etc 

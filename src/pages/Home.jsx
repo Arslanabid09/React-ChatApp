@@ -4,6 +4,7 @@ import { useAuth } from '../Context/AuthContext';
 import { FiSend } from 'react-icons/fi';
 import { FaSmile, FaTrash } from 'react-icons/fa';
 import client, { collId, databases, dbId } from '../Appwrite/AppwriteConfig';
+import { toast } from 'react-toastify';
 
 const Home = () => {
   const { user } = useAuth();
@@ -21,13 +22,11 @@ const Home = () => {
       (response) => {
         if (response.events.includes(`databases.*.collections.*.documents.*.create`)) {
           setMessages((prevChat) => [response.payload, ...prevChat]);
-          console.log('Real-time Event: Message created');
         }
         if (response.events.includes(`databases.*.collections.*.documents.*.delete`)) {
           setMessages((prevChat) =>
             prevChat.filter((msg) => msg.$id !== response.payload.$id)
           );
-          console.log('Real-time Event: Message deleted');
         }
       }
     );
@@ -46,9 +45,9 @@ const Home = () => {
         Query.limit(100),
       ]);
       setMessages(response.documents);
-      setLoading(false); // Stop loading state
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      toast.error('Failed to fetch messages. Please try again later.');
+    } finally {
       setLoading(false); // Stop loading state
     }
   };
@@ -67,7 +66,7 @@ const Home = () => {
       await databases.createDocument(dbId, collId, ID.unique(), msgData);
       setText('');
     } catch (error) {
-      console.error('Error sending message:', error);
+      toast.error('Failed to send message. Please try again later.');
     }
   };
 
@@ -76,17 +75,17 @@ const Home = () => {
     try {
       await databases.deleteDocument(dbId, collId, id);
     } catch (error) {
-      console.error('Error deleting message:', error);
+      toast.error('Failed to delete message. Please try again later.');
     }
   };
 
   return (
-    <main className="text-white my-20 px-4">
+    <main className="text-white my-8">
       {/* Input Section */}
-      <section className="flex items-center gap-x-4 px-4 bg-blue-400 py-3 rounded-t-md shadow-md">
+      <section className="flex items-center gap-x-4 px-4 bg-blue-400 py-3 shadow-md">
         <FaSmile className="text-black/60 text-xl cursor-pointer hover:text-black transition-colors" />
         <textarea
-          className="w-full border-none resize-none outline-none bg-transparent placeholder:text-black/70 text-black text-base font-semibold rounded-md"
+          className="w-full border-none resize-none outline-none bg-transparent placeholder:text-black/70 text-black text-base font-semibold"
           placeholder="Type something..."
           onChange={(e) => setText(e.target.value)}
           value={text}

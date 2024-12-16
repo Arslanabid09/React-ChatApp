@@ -13,7 +13,6 @@ const SignUp = () => {
   const registerRef = useRef(null);
 
   const togglePassword = () => setShowPassword(!showPassword);
-
   const handleRegister =  (e) => {
     e.preventDefault();
 
@@ -39,7 +38,7 @@ const SignUp = () => {
       toast.error(`Password must be at least ${minPasswordLength} characters`);
       return;
     }
-      const response = handleSignUp(userData); 
+       handleSignUp(userData); 
     
   };
 

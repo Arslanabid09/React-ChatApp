@@ -24,7 +24,6 @@ const Login = () => {
   // handling user auth    
   const handleUser =  (e) => {
     e.preventDefault();
-  
     const email = userRef.current.email.value.trim();
     const password = userRef.current.password.value.trim();
     const userInfo = { email, password };
@@ -47,7 +46,7 @@ const Login = () => {
       return;
     }
     // handling user login 
-      const response =  handleLogin(userInfo);
+      handleLogin(userInfo);
   };
   
   return (
@@ -61,8 +60,7 @@ const Login = () => {
         ref={userRef}
           onSubmit={handleUser}
           className="rounded-lg bg-black p-10 flex flex-col gap-y-7 justify-center w-full max-w-2xl mx-auto"
-        >
-         
+        >     
           <Input
             type="email"
             name="email"
