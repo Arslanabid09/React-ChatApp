@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ID, Query } from 'appwrite';
 import { useAuth } from '../Context/AuthContext';
 import { FiSend } from 'react-icons/fi';
-import { FaSmile, FaTrash } from 'react-icons/fa';
+import {FaTrash} from 'react-icons/fa';
 import client, { collId, databases, dbId } from '../Appwrite/AppwriteConfig';
 import { toast } from 'react-toastify';
 
@@ -80,19 +80,19 @@ const Home = () => {
   };
 
   return (
-    <main className="text-white my-8">
+    <main className="text-white mt-1">
       {/* Input Section */}
-      <section className="flex items-center gap-x-4 px-4 bg-blue-400 py-3 shadow-md">
-        <FaSmile className="text-black/60 text-xl cursor-pointer hover:text-black transition-colors" />
+      <section className="flex items-cente gap-x-4 px-4 border border-black bg-white text-black py-3 shadow-md">
+        
         <textarea
-          className="w-full border-none resize-none outline-none bg-transparent placeholder:text-black/70 text-black text-base font-semibold"
+          className="w-full border-none resize-none outline-none bg-transparent placeholder:text-black  text-base font-semibold"
           placeholder="Type something..."
           onChange={(e) => setText(e.target.value)}
           value={text}
         />
         {text.trim().length > 0 && (
           <FiSend
-            className="text-black/60 text-2xl cursor-pointer hover:text-black transition-colors"
+            className="text-black text-2xl mt-4 cursor-pointer  transition-colors"
             onClick={handleSubmit}
           />
         )}
