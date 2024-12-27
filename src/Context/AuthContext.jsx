@@ -22,21 +22,21 @@ export const AuthProvider = ({ children })=>{
   // use navigate to navigate the user  on the basis of condition
   const navigate = useNavigate(); 
   // getting user 
+  useEffect(()=>{
+    handleUser();
+  },[])
   const handleUser = async () => {
     setLoading(true);
     try {
       const response = await account.get();
       setUser(response);
     } catch (error) {
-      toast.error("Failed to fetch user. Please try again later.");
+      console.log("Failed to fetch user. Please try again later.");
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
-  useEffect(()=>{
-    handleUser();
-},[])
 
   // handling Login with appWrite
   const handleLogin = async(userData)=>{
