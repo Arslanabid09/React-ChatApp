@@ -54,7 +54,7 @@ const Login = () => {
     <ToastContainer />
       <section className="space-y-5 my-20 px-5">
         <h1 className="text-3xl md:text-4xl text-center font-extrabold text-white">
-          Create Your Account
+          Login to Your Account
         </h1>
         <form
         ref={userRef}
